@@ -33,72 +33,73 @@ let isSendCooldown = false // Flag to manage the sending cooldown
 // UI RENDERING
 // ============================================
 document.querySelector('#app').innerHTML = `
-  <div class="min-h-screen bg-black flex flex-col items-center justify-between p-4 md:p-8">
+  <div class="min-h-screen bg-black flex flex-col items-center justify-center p-8">
     <!-- Header -->
-    <div class="text-center mt-8">
-      <h1 class="text-4xl md:text-5xl font-bold text-white mb-2">
+    <div class="text-center mb-12">
+      <h1 class="text-5xl font-bold text-white mb-4">
         VoifyMELIVE 
       </h1>
-      <p class="text-gray-400 text-base">
-        Detect Real or AI-generated voice
+           <p class="text-gray-400 text-lg">
+        Easily detect Real or AI generated voice
+      </p>
+      <p class="text-gray-400 text-lg">
+        Click the microphone to start recording
       </p>
     </div>
 
-    <!-- Main Content -->
-    <div class="flex flex-col items-center justify-center flex-grow">
-      <!-- Microphone Button -->
-      <div class="relative my-8">
-        <!-- Pulsing ring effect when recording -->
-        <div id="pulseRing" class="absolute inset-0 rounded-full opacity-0 transition-opacity duration-300"></div>
+    <!-- Microphone Button -->
+    <div class="relative mb-8">
+      <!-- Pulsing ring effect when recording -->
+      <div id="pulseRing" class="absolute inset-0 rounded-full opacity-0 transition-opacity duration-300"></div>
+      
+      <!-- Main button -->
+      <button 
+        id="micButton"
+        class="relative z-10 w-32 h-32 rounded-full bg-gradient-to-br from-purple-600 to-purple-800 hover:from-purple-500 hover:to-purple-700 transition-all duration-300 shadow-2xl hover:shadow-purple-500/50 flex items-center justify-center group"
+        aria-label="Record audio"
+      >
+        <!-- Microphone Icon -->
+        <svg id="micIcon" class="w-16 h-16 text-white transition-transform duration-300 group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+        </svg>
         
-        <!-- Main button -->
-        <button 
-          id="micButton"
-          class="relative z-10 w-28 h-28 md:w-32 md:h-32 rounded-full bg-gradient-to-br from-purple-600 to-purple-800 hover:from-purple-500 hover:to-purple-700 transition-all duration-300 shadow-2xl hover:shadow-purple-500/50 flex items-center justify-center group"
-          aria-label="Record audio"
-        >
-          <!-- Microphone Icon -->
-          <svg id="micIcon" class="w-14 h-14 md:w-16 md:h-16 text-white transition-transform duration-300 group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
-          </svg>
-          
-          <!-- Stop Icon (hidden by default) -->
-          <svg id="stopIcon" class="w-14 h-14 md:w-16 md:h-16 text-white hidden" fill="currentColor" viewBox="0 0 24 24">
-            <rect x="6" y="6" width="12" height="12" rx="2" />
-          </svg>
-        </button>
-      </div>
+        <!-- Stop Icon (hidden by default) -->
+        <svg id="stopIcon" class="w-16 h-16 text-white hidden" fill="currentColor" viewBox="0 0 24 24">
+          <rect x="6" y="6" width="12" height="12" rx="2" />
+        </svg>
+      </button>
+    </div>
 
-      <!-- Status and Timer -->
-      <div class="text-center h-16">
-        <div id="status" class="mb-2">
-          <p class="text-gray-500 text-sm">Click the microphone to start</p>
-        </div>
-        <div id="timer" class="text-3xl md:text-4xl font-mono text-purple-400 opacity-0 transition-opacity duration-300">
-          00:00
-        </div>
-      </div>
+    <!-- Status indicator -->
+    <div id="status" class="text-center mb-8 h-8">
+      <p class="text-gray-500 text-sm">Ready to record</p>
+    </div>
 
-      <!-- Audio visualizer bars -->
-      <div id="visualizer" class="flex gap-1 h-16 items-end mb-8 opacity-0 transition-opacity duration-300">
-        ${Array(16).fill(0).map(() => `
-          <div class="w-2 bg-gradient-to-t from-purple-600 to-purple-400 rounded-t transition-all duration-150" style="height: 4px;"></div>
-        `).join('')}
-      </div>
+    <!-- Recording timer -->
+    <div id="timer" class="text-4xl font-mono text-purple-400 mb-8 opacity-0 transition-opacity duration-300">
+      00:00
+    </div>
+
+    <!-- Audio visualizer bars -->
+    <div id="visualizer" class="flex gap-1 h-20 items-end mb-8 opacity-0 transition-opacity duration-300">
+      ${Array(20).fill(0).map(() => `
+        <div class="w-2 bg-gradient-to-t from-purple-600 to-purple-400 rounded-t transition-all duration-150" style="height: 4px;"></div>
+      `).join('')}
     </div>
 
     <!-- Info card -->
-    <div class="w-full max-w-md bg-gray-900 rounded-lg p-4 border border-gray-800 mb-4">
-      <h3 class="text-white font-semibold mb-2 flex items-center gap-2 text-sm">
+    <div class="max-w-md bg-gray-900 rounded-lg p-6 border border-gray-800">
+      <h3 class="text-white font-semibold mb-2 flex items-center gap-2">
         <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
         How it works
       </h3>
-      <ul class="text-gray-400 text-xs space-y-1">
-        <li>• Click the microphone to start recording.</li>
-        <li>• Audio is streamed to the server in real-time.</li>
-        <li>• Click again to stop recording.</li>
+      <ul class="text-gray-400 text-sm space-y-2">
+        <li>• Click the microphone to start recording</li>
+        <li>• Audio is streamed to the server in real-time</li>
+        <li>• Click again to stop recording</li>
+        <li>• Optimized for minimal data usage</li>
       </ul>
     </div>
   </div>
