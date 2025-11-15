@@ -228,7 +228,7 @@ function processSendQueue() {
 async function sendAudioChunk(audioBlob) {
   try {
     const formData = new FormData()
-    formData.append('audio', audioBlob, `chunk_${Date.now()}.webm`)
+    formData.append('file', audioBlob, `chunk_${Date.now()}.webm`)
     
     // Send to backend - Edit the URL in CONFIG above
     const response = await fetch(CONFIG.BACKEND_URL, {
