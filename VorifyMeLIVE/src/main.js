@@ -132,74 +132,75 @@ micButton.addEventListener('click', async () => {
 // ============================================
 // RECORDING FUNCTIONS
 // ============================================
+// Replace your startRecording and stopRecording with this logic
+
+let recordingInterval = null;
+
 async function startRecording() {
   try {
-    // Request microphone access
     stream = await navigator.mediaDevices.getUserMedia({ 
       audio: {
         echoCancellation: true,
         noiseSuppression: true,
-        sampleRate: 44100
+        sampleRate: 22050 // Lower sample rate = Faster processing!
       } 
     })
 
-    // Create MediaRecorder with optimized settings
-    const options = {
-      mimeType: 'audio/webm;codecs=opus', // Opus codec is efficient
-      audioBitsPerSecond: CONFIG.AUDIO_BITRATE
-    }
-    
-    mediaRecorder = new MediaRecorder(stream, options)
-    audioChunks = []
-
-    // Handle data availability - queue chunks for sending
-    mediaRecorder.ondataavailable = (event) => {
-      if (event.data.size > 0) {
-        audioChunks.push(event.data);
-        console.log('A 3-second chunk is ready, adding to queue.');
-        sendQueue.push(event.data);
-        processSendQueue();
-      }
-    }
-
-    // Start recording with time slicing for streaming
-    mediaRecorder.start(CONFIG.CHUNK_DURATION)
     isRecording = true
-
-    // Update UI
     updateUIForRecording(true)
     startTimer()
     startVisualizer(stream)
-    
     status.innerHTML = '<p class="text-purple-400 text-sm font-semibold">● Recording...</p>'
 
+    // FUNCTION TO RECORD ONE CHUNK
+    const recordChunk = () => {
+      if (!isRecording) return;
+
+      // Create a new recorder for every chunk to ensure valid Headers
+      const options = { mimeType: 'audio/webm;codecs=opus', audioBitsPerSecond: 64000 }; // Lower bitrate for speed
+      const tempRecorder = new MediaRecorder(stream, options);
+      const chunks = [];
+
+      tempRecorder.ondataavailable = e => chunks.push(e.data);
+      
+      tempRecorder.onstop = () => {
+        const blob = new Blob(chunks, { type: 'audio/webm;codecs=opus' });
+        // Send immediately
+        if(blob.size > 0) sendAudioChunk(blob);
+      };
+
+      tempRecorder.start();
+
+      // Stop this specific recorder after 3 seconds
+      setTimeout(() => {
+        if (tempRecorder.state === "recording") {
+            tempRecorder.stop();
+        }
+      }, CONFIG.CHUNK_DURATION);
+    };
+
+    // Start the loop
+    recordChunk(); // Record first chunk
+    recordingInterval = setInterval(recordChunk, CONFIG.CHUNK_DURATION); // Repeat
+
   } catch (error) {
-    console.error('Error accessing microphone:', error)
-    status.innerHTML = '<p class="text-red-400 text-sm">Error: Could not access microphone</p>'
+    console.error('Error:', error)
   }
 }
 
 function stopRecording() {
-  if (mediaRecorder && isRecording) {
-    mediaRecorder.stop()
-    isRecording = false
-
-    // Stop all tracks
-    if (stream) {
-      stream.getTracks().forEach(track => track.stop())
-    }
-
-    // Update UI
-    updateUIForRecording(false)
-    stopTimer()
-    stopVisualizer()
-    
-    status.innerHTML = '<p class="text-green-400 text-sm font-semibold">✓ Recording saved</p>'
-    
-    setTimeout(() => {
-      status.innerHTML = '<p class="text-gray-500 text-sm">Ready to record</p>'
-    }, 3000)
+  isRecording = false
+  clearInterval(recordingInterval) // Stop the loop
+  
+  // Stop all tracks
+  if (stream) {
+    stream.getTracks().forEach(track => track.stop())
   }
+
+  updateUIForRecording(false)
+  stopTimer()
+  stopVisualizer()
+  status.innerHTML = '<p class="text-gray-500 text-sm">Ready to record</p>'
 }
 
 // ============================================
