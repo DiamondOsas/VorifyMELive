@@ -40,10 +40,10 @@ document.querySelector('#app').innerHTML = `
         VoifyMELIVE 
       </h1>
            <p class="text-gray-400 text-lg">
-        Easily detect Real or AI generated voice
+        Easily detect Real or AI Generated Voice
       </p>
       <p class="text-gray-400 text-lg">
-        Click the microphone to start recording
+        Click the Microphone to Start Recording
       </p>
     </div>
 
@@ -82,7 +82,7 @@ document.querySelector('#app').innerHTML = `
 
     <!-- Audio visualizer bars -->
     <div id="visualizer" class="flex gap-1 h-20 items-end mb-8 opacity-0 transition-opacity duration-300">
-      ${Array(20).fill(0).map(() => `
+      ${Array(15).fill(0).map(() => `
         <div class="w-2 bg-gradient-to-t from-purple-600 to-purple-400 rounded-t transition-all duration-150" style="height: 4px;"></div>
       `).join('')}
     </div>
@@ -263,7 +263,7 @@ async function sendAudioChunk(audioBlob) {
 function displayClassification(classification) {
   const statusElement = document.getElementById('status');
   let colorClass = 'text-gray-500';
-  if (classification === 'Human') {
+  if (classification === 'HUMAN') {
     colorClass = 'text-green-400';
   } else if (classification === 'AI') {
     colorClass = 'text-red-400';
@@ -328,7 +328,7 @@ function startVisualizer(stream) {
     // Update bar heights based on audio levels
     bars.forEach((bar, index) => {
       const value = dataArray[index * 2] || 0
-      const height = Math.max(4, (value / 255) * 80)
+      const height = Math.max(4, (value / 150) * 100)
       bar.style.height = `${height}px`
     })
     

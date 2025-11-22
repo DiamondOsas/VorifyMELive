@@ -2,15 +2,12 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 import random
 import os
+import time
 
 app = Flask(__name__)
 # Allow all origins for development purposes.
 # For production, you should restrict this to your frontend's domain.
 CORS(app)
-
-# Create a directory to store audio chunks if it doesn't exist
-if not os.path.exists('audio_chunks'):
-    os.makedirs('audio_chunks')
 
 @app.route('/audio', methods=['POST'])
 def handle_audio():
@@ -26,8 +23,8 @@ def handle_audio():
     print(f"Received audio chunk: {audio_file.filename}")
 
     # Randomly classify the audio
-    classification = random.choice(['Human', 'AI'])
-    
+    classification = random.choice(['HUMAN', 'AI'])
+    time.sleep(2)
     print(f"Classification: {classification}")
 
     return jsonify({'classification': classification})
