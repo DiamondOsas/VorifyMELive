@@ -5,13 +5,13 @@ import './style.css'
 // ============================================
 const CONFIG = {
   // Backend server URL - Change this to your backend endpoint
-  BACKEND_URL: import.meta.env.VITE_AUDIO_SERVER,
-  
+  BACKEND_URL: import.meta.env.VITE_AUDIO_SERVER || 'http://127.0.0.1:9001/audio',
+
   // Audio chunk duration in milliseconds (lower = more frequent sends, higher = less data usage)
   CHUNK_DURATION: 3000, // 3 second chunks
   
   // Audio quality settings (lower = smaller file size)
-  AUDIO_BITRATE: 128000, // 128 kbps - reduce to 64000 for lighter data usage
+  AUDIO_BITRATE: 64000, // 128 kbps - reduce to 64000 for lighter data usage
   
   // Theme colors - Customize your purple shades
   PRIMARY_PURPLE: '#9333ea', // Main purple
@@ -170,6 +170,7 @@ async function startRecording() {
       };
 
       tempRecorder.start();
+      console.log('Started recording a new 3-second chunk...');
 
       // Stop this specific recorder after 3 seconds
       setTimeout(() => {
@@ -201,6 +202,7 @@ function stopRecording() {
   stopTimer()
   stopVisualizer()
   status.innerHTML = '<p class="text-gray-500 text-sm">Ready to record</p>'
+  console.log('Recording stopped.')
 }
 
 // ============================================
@@ -208,24 +210,24 @@ function stopRecording() {
 // ============================================
 
 // Processes the queue of audio chunks to be sent
-function processSendQueue() {
-  if (isSendCooldown || sendQueue.length === 0) {
-    return; // Do nothing if on cooldown or if the queue is empty
-  }
+// function processSendQueue() {
+//   if (isSendCooldown || sendQueue.length === 0) {
+//     return; // Do nothing if on cooldown or if the queue is empty
+//   }
 
-  isSendCooldown = true;
-  const chunkToSend = sendQueue.shift(); // Get the oldest chunk
+//   isSendCooldown = true;
+//   const chunkToSend = sendQueue.shift(); // Get the oldest chunk
 
-  console.log('Sending a 3-second chunk to the backend...');
-  sendAudioChunk(chunkToSend);
+//   console.log('Sending a 3-second chunk to the backend...');
+//   sendAudioChunk(chunkToSend);
 
-  console.log('Waiting for 3 seconds before the next send...');
-  setTimeout(() => {
-    console.log('Cooldown finished. Ready to send next chunk.');
-    isSendCooldown = false;
-    processSendQueue(); // Attempt to process the next item in the queue
-  }, 3000);
-}
+//   console.log('Waiting for 3 seconds before the next send...');
+//   setTimeout(() => {
+//     console.log('Cooldown finished. Ready to send next chunk.');
+//     isSendCooldown = false;
+//     processSendQueue(); // Attempt to process the next item in the queue
+//   }, 3000);
+// }
 
 async function sendAudioChunk(audioBlob) {
   try {

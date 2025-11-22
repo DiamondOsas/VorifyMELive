@@ -11,10 +11,10 @@ CORS(app)
 
 @app.route('/audio', methods=['POST'])
 def handle_audio():
-    if 'audio' not in request.files:
+    if 'file' not in request.files:
         return jsonify({'error': 'No audio file in request'}), 400
 
-    audio_file = request.files['audio']
+    audio_file = request.files['file']
     
     # You can save the chunk to inspect it
     # filename = f"audio_chunks/{audio_file.filename}"
@@ -30,4 +30,4 @@ def handle_audio():
     return jsonify({'classification': classification})
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=3001, debug=True)
+    app.run(host='0.0.0.0', port=9001, debug=True)
